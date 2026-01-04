@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snippet Keeper</title>
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="A simple masonry snippet manager">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest"
+        href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNuaXBwZXQgS2VlcGVyIiwKICAic2hvcnRfbmFtZSI6ICJTbmlwcyIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiI2ZmZmZmZiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vdmlhLnBsYWNlaG9sZGVyLmNvbS8xOTIiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+    <link rel="stylesheet" href="stylesheet.css">
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+    <!-- Header with Search & Filter Icon -->
+    <header class="app-header">
+        <div class="header-row">
+            <div class="search-container">
+                <svg class="search-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search snippets...">
+            </div>
+            <button class="filter-trigger-btn" id="btnOpenFilter" aria-label="Filter">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Masonry Container -->
+    <div class="container">
+        <div class="masonry-wrapper" id="masonryGrid">
+            <div class="masonry-col" id="col-1"></div>
+            <div class="masonry-col" id="col-2"></div>
+        </div>
+        <div id="emptyState" class="empty-state">No snippets found.</div>
+    </div>
+
+    <!-- FAB -->
+    <button class="add-btn" id="fabAdd" aria-label="Add Snippet">
+        <svg viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+        </svg>
+        Add Snippet
+    </button>
+
+    <!-- Add/Edit Snippet Modal -->
+    <div class="modal-overlay" id="snippetModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">New Snippet</span>
+                <button class="close-btn" id="btnCloseSnippet">&times;</button>
+            </div>
+
+            <!-- Editor with Highlight support -->
+            <div class="editor-container">
+                <div class="editor-layer editor-backdrop" id="editorBackdrop"></div>
+                <textarea class="editor-layer editor-textarea" id="snippetInput"
+                    placeholder="Type something... Use #hashtags to label!"></textarea>
+            </div>
+
+            <div id="suggestionArea" class="suggestion-area">
+            </div>
+
+            <div class="action-bar">
+                <button class="delete-btn" id="btnDelete">Delete</button>
+                <button class="save-btn" id="btnSave">
+                    <span class="btn-text">Save</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal-overlay" id="filterModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Filter Snippets</span>
+                <button class="close-btn" id="btnCloseFilter">&times;</button>
+            </div>
+
+            <div class="filter-options" id="filterOptionsContainer">
+                <!-- Static Options -->
+                <div class="filter-section-title">Types</div>
+                <label class="filter-option selected" id="opt-all">
+                    <input type="radio" name="filter" value="all" checked>
+                    <span>All Snippets</span>
+                </label>
+                <label class="filter-option" id="opt-links">
+                    <input type="radio" name="filter" value="links">
+                    <span>Links Only</span>
+                </label>
+                <label class="filter-option" id="opt-text">
+                    <input type="radio" name="filter" value="text">
+                    <span>Text Only</span>
+                </label>
+
+                <!-- Dynamic Tags will be injected here -->
+                <div id="dynamicTagsSection">
+                    <div class="filter-section-title" style="margin-top:20px;">Labels</div>
+                    <!-- Tags go here -->
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="save-btn" id="btnApplyFilter">Show Results</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

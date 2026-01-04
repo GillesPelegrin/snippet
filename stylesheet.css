@@ -1,0 +1,554 @@
+ /* --- CSS Reset & Base --- */
+ :root {
+     --primary: #E2725B;
+     /* Terracotta */
+     --bg: #fafafa;
+     --card-bg: #ffffff;
+     --text-main: #111111;
+     --text-sub: #767676;
+     --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+     --radius: 12px;
+     --danger: #d9534f;
+     --tag-bg: #fff0ec;
+ }
+
+ * {
+     box-sizing: border-box;
+     -webkit-tap-highlight-color: transparent;
+ }
+
+ body {
+     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+     background-color: var(--bg);
+     color: var(--text-main);
+     margin: 0;
+     padding: 0;
+     padding-bottom: 100px;
+     /* Space for FAB */
+ }
+
+ /* --- Header: Search & Filter Icon --- */
+ .app-header {
+     background: var(--card-bg);
+     position: sticky;
+     top: 0;
+     z-index: 10;
+     padding: 1rem;
+     box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
+ }
+
+ .header-row {
+     display: flex;
+     gap: 12px;
+     align-items: center;
+ }
+
+ .search-container {
+     position: relative;
+     flex: 1;
+     /* Take remaining space */
+ }
+
+ .search-icon {
+     position: absolute;
+     left: 12px;
+     top: 50%;
+     transform: translateY(-50%);
+     width: 18px;
+     height: 18px;
+     fill: var(--text-sub);
+ }
+
+ .search-input {
+     width: 100%;
+     padding: 12px 12px 12px 40px;
+     border-radius: 50px;
+     border: 1px solid #eee;
+     background: #f5f5f5;
+     font-size: 1rem;
+     color: var(--text-main);
+     outline: none;
+     transition: all 0.2s;
+ }
+
+ .search-input:focus {
+     background: #fff;
+     border-color: var(--primary);
+     box-shadow: 0 0 0 2px rgba(226, 114, 91, 0.2);
+ }
+
+ /* Filter Button in Header */
+ .filter-trigger-btn {
+     width: 46px;
+     height: 46px;
+     border-radius: 50%;
+     background: #f5f5f5;
+     border: 1px solid #eee;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     color: var(--text-sub);
+     transition: all 0.2s;
+     flex-shrink: 0;
+ }
+
+ .filter-trigger-btn.active {
+     background: var(--primary);
+     color: white;
+     border-color: var(--primary);
+ }
+
+ .filter-trigger-btn svg {
+     width: 24px;
+     height: 24px;
+     fill: currentColor;
+ }
+
+ /* --- Masonry Layout --- */
+ .container {
+     max-width: 800px;
+     margin: 0 auto;
+     padding: 10px;
+ }
+
+ .masonry-wrapper {
+     display: flex;
+     gap: 10px;
+ }
+
+ .masonry-col {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     gap: 10px;
+     min-width: 0;
+ }
+
+ /* --- Snippet Card --- */
+ .snippet-card {
+     background: var(--card-bg);
+     border-radius: var(--radius);
+     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+     overflow: hidden;
+     transition: transform 0.2s ease;
+     cursor: pointer;
+     break-inside: avoid;
+     position: relative;
+     width: 100%;
+ }
+
+ .snippet-card:active {
+     transform: scale(0.98);
+ }
+
+ .snippet-content {
+     padding: 1rem;
+     font-size: 0.95rem;
+     line-height: 1.5;
+     white-space: pre-wrap;
+     word-wrap: break-word;
+ }
+
+ /* --- Link Preview Styling --- */
+ .link-preview {
+     display: block;
+     text-decoration: none;
+     color: inherit;
+     width: 100%;
+ }
+
+ .link-image {
+     width: 100%;
+     height: 160px;
+     object-fit: cover;
+     background-color: #eee;
+     display: block;
+ }
+
+ .link-meta {
+     padding: 0.8rem 1rem;
+     background: #f9f9f9;
+     border-top: 1px solid #f0f0f0;
+ }
+
+.link-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    
+    /* NEW: Multi-line support */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Shows max 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal; /* Allows text to wrap */
+    line-height: 1.3;
+}
+
+.snippet-card.is-link-only .link-title {
+        /* Larger font */
+    -webkit-line-clamp: unset; /* Show full title (unlimited lines) */
+    display: block;
+    margin-bottom: 8px;
+}
+
+ .link-domain {
+     font-size: 0.75rem;
+     color: var(--text-sub);
+ }
+
+ /* --- Skeleton Loading Animation --- */
+ @keyframes shimmer {
+     0% {
+         background-position: -200% 0;
+     }
+
+     100% {
+         background-position: 200% 0;
+     }
+ }
+
+ .skeleton-block {
+     background: #f0f0f0;
+     background-image: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+     background-size: 200% 100%;
+     animation: shimmer 1.5s infinite linear;
+ }
+
+ .skeleton-image {
+     width: 100%;
+     height: 160px;
+ }
+
+ .skeleton-meta {
+     padding: 1rem;
+     border-top: 1px solid #eee;
+ }
+
+ .skeleton-line {
+     height: 12px;
+     border-radius: 4px;
+     margin-bottom: 8px;
+ }
+
+ .skeleton-line.short {
+     width: 60%;
+ }
+
+ /* --- Add Button (Pill Style) --- */
+ .add-btn {
+     position: fixed;
+     bottom: 24px;
+     right: 24px;
+     background-color: var(--primary);
+     color: white;
+     border-radius: 50px;
+     box-shadow: 0 4px 12px rgba(226, 114, 91, 0.4);
+     /* Shadow matches terracotta */
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     z-index: 100;
+     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+     border: none;
+     padding: 14px 24px;
+     font-weight: 600;
+     font-size: 1rem;
+     gap: 8px;
+ }
+
+ .add-btn:hover {
+     transform: scale(1.05);
+ }
+
+ .add-btn svg {
+     width: 20px;
+     height: 20px;
+     fill: currentColor;
+ }
+
+ /* --- Modal (Full Screen) --- */
+ .modal-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.5);
+     z-index: 200;
+     display: flex;
+     opacity: 0;
+     pointer-events: none;
+     transition: opacity 0.2s ease;
+     align-items: center;
+     justify-content: center;
+ }
+
+ .modal-overlay.active {
+     opacity: 1;
+     pointer-events: auto;
+ }
+
+ .modal-content {
+     background: white;
+     width: 100%;
+     height: 100%;
+     border-radius: 0;
+     padding: 20px;
+     display: flex;
+     flex-direction: column;
+     transform: scale(0.95);
+     transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+ }
+
+ @media (min-width: 800px) {
+     .modal-content {
+         max-width: 600px;
+         height: 80vh;
+         border-radius: 12px;
+         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+     }
+ }
+
+ .modal-overlay.active .modal-content {
+     transform: scale(1);
+ }
+
+ .modal-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 1.5rem;
+     padding-bottom: 1rem;
+     border-bottom: 1px solid #f0f0f0;
+ }
+
+ .modal-title {
+     font-size: 1.2rem;
+     font-weight: 700;
+ }
+
+ .close-btn {
+     background: none;
+     border: none;
+     font-size: 2rem;
+     cursor: pointer;
+     padding: 0;
+     line-height: 1;
+     color: var(--text-sub);
+ }
+
+ /* --- Highlight Editor --- */
+ .editor-container {
+     position: relative;
+     width: 100%;
+     flex: 1;
+     margin-bottom: 1rem;
+     overflow: hidden;
+     /* Contains the layers */
+ }
+
+ .editor-layer {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     font-family: inherit;
+     font-size: 1.2rem;
+     line-height: 1.5;
+     padding: 0;
+     margin: 0;
+     border: none;
+     white-space: pre-wrap;
+     word-wrap: break-word;
+     background: transparent;
+     overflow-y: auto;
+     /* Allow scrolling */
+ }
+
+ /* The backdrop shows the colors */
+ .editor-backdrop {
+     z-index: 1;
+     color: var(--text-main);
+     pointer-events: none;
+     /* Let clicks pass through to textarea */
+ }
+
+ /* The textarea handles input */
+ .editor-textarea {
+     z-index: 2;
+     color: transparent;
+     caret-color: var(--text-main);
+     outline: none;
+     resize: none;
+ }
+
+ .tag-highlight {
+     color: var(--primary);
+     font-weight: 600;
+ }
+
+ .action-bar {
+     display: flex;
+     gap: 10px;
+     width: 100%;
+     margin-top: auto;
+ }
+
+ .save-btn {
+     background: var(--primary);
+     color: white;
+     border: none;
+     padding: 1rem;
+     border-radius: 30px;
+     font-size: 1rem;
+     font-weight: 600;
+     cursor: pointer;
+     flex: 2;
+     transition: opacity 0.2s;
+ }
+
+ .save-btn:active {
+     opacity: 0.9;
+ }
+
+ .delete-btn {
+     background: #f0f0f0;
+     color: var(--danger);
+     border: none;
+     padding: 1rem;
+     border-radius: 30px;
+     font-size: 1rem;
+     font-weight: 600;
+     cursor: pointer;
+     flex: 1;
+     display: none;
+ }
+
+ .save-btn:disabled {
+     background: #ccc;
+     cursor: not-allowed;
+ }
+
+ /* --- Filter Modal Options --- */
+ .filter-options {
+     display: flex;
+     flex-direction: column;
+     gap: 16px;
+     overflow-y: auto;
+     /* Scroll if many tags */
+     padding-bottom: 20px;
+ }
+
+ .filter-section-title {
+     font-size: 0.9rem;
+     color: var(--text-sub);
+     font-weight: 600;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+     margin: 10px 0 5px 0;
+ }
+
+ .filter-option {
+     display: flex;
+     align-items: center;
+     padding: 16px;
+     background: #f9f9f9;
+     border-radius: var(--radius);
+     cursor: pointer;
+     border: 2px solid transparent;
+     transition: all 0.2s;
+     flex-shrink: 0;
+ }
+
+ .filter-option.selected {
+     border-color: var(--primary);
+     background: #fffcfb;
+     /* Very light terracotta tint */
+ }
+
+ .filter-option input {
+     margin-right: 16px;
+     width: 20px;
+     height: 20px;
+     accent-color: var(--primary);
+ }
+
+ .filter-option span {
+     font-size: 1.1rem;
+     font-weight: 500;
+ }
+
+ .tag-pill {
+     margin-left: auto;
+     background: #eee;
+     padding: 2px 8px;
+     border-radius: 10px;
+     font-size: 0.8rem;
+     color: var(--text-sub);
+ }
+
+ /* --- Empty State --- */
+ .empty-state {
+     text-align: center;
+     padding: 4rem 1rem;
+     color: var(--text-sub);
+     grid-column: span 2;
+     display: none;
+     /* Hidden by default */
+ }
+
+ .suggestion-area {
+     display: flex;
+     flex-wrap: wrap;
+     gap: 8px;
+     padding: 0 0 16px 0;
+     min-height: 42px;
+     /* Voorkom springen als hij leeg is */
+ }
+
+ .suggestion-chip {
+     font-size: 0.85rem;
+     padding: 6px 12px;
+     border-radius: 20px;
+     background-color: transparent;
+     border: 1px dashed var(--primary);
+     /* Stippellijn = Suggestie */
+     color: var(--primary);
+     cursor: pointer;
+     transition: all 0.2s ease;
+     display: flex;
+     align-items: center;
+     gap: 4px;
+     animation: fadeIn 0.3s ease-out;
+ }
+
+ .suggestion-chip:hover {
+     background-color: var(--tag-bg);
+     /* Heel licht oranje */
+     transform: translateY(-1px);
+     border-style: solid;
+     /* Wordt solide bij hover */
+ }
+
+ /* Klein plusje voor het icoon-effect */
+ .suggestion-chip::before {
+     content: '+';
+     font-weight: bold;
+     font-size: 1.1em;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: translateY(5px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
