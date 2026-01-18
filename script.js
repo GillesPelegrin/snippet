@@ -352,145 +352,119 @@ function createCard(snippet) {
     const div = document.createElement('div');
     div.className = 'snippet-card';
     
-    // 1. Basic click on the card body (Text areas) -> Edit
-    div.onclick = (e) => {
-        // Only trigger if we didn't click inside the link preview
-        if (!e.target.closest('.link-preview')) {
-            openModal(snippet);
-        }
-    };
-
+    // --- PREPARE CONTENT ---
     const urlMatch = snippet.text.match(RE.URL);
     const url = urlMatch ? urlMatch[0] : null;
-
-    // Clean text for display
     let content = snippet.text;
     if (url) content = content.replace(url, '');
     content = content.replace(RE.TAG, ' ').replace(/\s+/g, ' ').trim();
 
-    const isLinkOnly = !content && !!url;
-    if (isLinkOnly) div.classList.add('is-link-only');
+    if (!content && !!url) div.classList.add('is-link-only');
 
+    // Build HTML
     let html = '';
-    
-    // Content Section
     if (content) {
         html += `<div class="snippet-content">${escapeHtml(content)}</div>`;
     } else if (snippet.tags?.length && !url) {
         html += `<div class="snippet-content" style="color:#888">${snippet.tags.map(t=>'#'+t).join(' ')}</div>`;
     }
 
-    // Link Preview Section (Note: No inline onclick anymore)
     if (url) {
-        let domain = 'External Link';
+        // ... (Your existing Link Preview & Fallback logic goes here) ...
+        // For brevity, assuming you kept the fallback logic from previous steps
+        let domain = 'External Link'; 
+        let image = null; 
         let title = 'Link';
-        let image = null;
-
         if (snippet.meta) {
-            domain = snippet.meta.domain || new URL(url).hostname;
-            title = snippet.meta.title || domain;
-            image = snippet.meta.image;
-        } else {
-             try { domain = new URL(url).hostname; } catch(e){}
-        }
-
-        // Generate the fallback gradient
+             domain = snippet.meta.domain; image = snippet.meta.image; title = snippet.meta.title;
+        } else { try { domain = new URL(url).hostname; } catch(e){} }
+        
         const bgStyle = getGradientForDomain(domain);
-        
-        // Logic:
-        // 1. If we have an image URL, try to show it.
-        // 2. If that fails (onerror), hide IMG and show the fallback DIV.
-        // 3. If we never had an image, just show the fallback DIV immediately.
-        
         const imgTag = image 
-            ? `<img src="${image}" class="link-image" loading="lazy" 
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+            ? `<img src="${image}" class="link-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
             : '';
-
         const fallbackDisplay = image ? 'none' : 'flex';
 
         html += `
             <div class="link-preview">
                 ${imgTag}
                 <div class="fallback-preview" style="display:${fallbackDisplay}; background:${bgStyle}">
-                    <span>${domain.charAt(0)}</span>
+                    <span>${domain.charAt(0).toUpperCase()}</span>
                     <span class="fallback-domain">${domain}</span>
                 </div>
-                
                 <div class="link-meta">
                     <div class="link-title">${escapeHtml(title)}</div>
                     <div class="link-domain">${escapeHtml(domain)}</div>
                 </div>
             </div>`;
     }
-
     div.innerHTML = html;
 
-    // --- LONG PRESS LOGIC FOR LINKS ---
-    const linkPreview = div.querySelector('.link-preview');
-    if (linkPreview) {
-        let timer;
-        let isLongPress = false;
-        let startX, startY;
+    // --- UNIFIED TOUCH/CLICK LOGIC ---
+    let timer;
+    let isLongPress = false;
+    let startX, startY;
 
-        const startPress = (e) => {
-            isLongPress = false;
-            // Track touch position to detect scrolling
-            if (e.touches) {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-            }
-            
-            timer = setTimeout(() => {
-                isLongPress = true;
-                if (navigator.vibrate) navigator.vibrate(50); // Bzzzt!
-                openModal(snippet); // Trigger Edit
-            }, 500); // 500ms wait time
-        };
+    const startPress = (e) => {
+        isLongPress = false;
+        if (e.touches) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }
+        timer = setTimeout(() => {
+            isLongPress = true;
+            if (navigator.vibrate) navigator.vibrate(50);
+            openModal(snippet); // LONG PRESS -> ALWAYS EDIT
+        }, 500);
+    };
 
-        const cancelPress = () => clearTimeout(timer);
+    const cancelPress = () => clearTimeout(timer);
 
-        const handleMove = (e) => {
-            if (!startX) return;
-            const x = e.touches[0].clientX;
-            const y = e.touches[0].clientY;
-            // If moved more than 10px, it's a scroll, not a long press
-            if (Math.abs(x - startX) > 10 || Math.abs(y - startY) > 10) {
-                clearTimeout(timer);
-            }
-        };
+    const handleMove = (e) => {
+        if (!startX) return;
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        if (Math.abs(x - startX) > 10 || Math.abs(y - startY) > 10) {
+            clearTimeout(timer); // Cancel if scrolling
+        }
+    };
 
-        const endPress = (e) => {
-            clearTimeout(timer);
-            // If it wasn't a long press, treat it as a normal click (Open Link)
-            if (!isLongPress) {
-                e.stopPropagation(); // Stop card click
-                window.open(url, '_blank');
-            } else {
-                // If it WAS a long press, we prevent standard behavior
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        };
+    const endPress = (e) => {
+        clearTimeout(timer);
+        if (isLongPress) {
+            // Event already handled by timer, just stop propagation
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
 
-        // Touch Events (Mobile)
-        linkPreview.addEventListener('touchstart', startPress, { passive: true });
-        linkPreview.addEventListener('touchmove', handleMove, { passive: true });
-        linkPreview.addEventListener('touchend', endPress);
-        
-        // Mouse Events (Desktop)
-        linkPreview.addEventListener('mousedown', startPress);
-        linkPreview.addEventListener('mouseleave', cancelPress);
-        linkPreview.addEventListener('mouseup', endPress);
+        // --- SHORT TAP LOGIC ---
+        // If we tapped the Link Preview area -> Open URL
+        if (url && e.target.closest('.link-preview')) {
+            e.stopPropagation();
+            window.open(url, '_blank');
+        } 
+        // If we tapped Text (or anything else) -> Edit
+        else {
+            openModal(snippet);
+        }
+    };
 
-        // Prevent Context Menu on Long Press (so native menu doesn't block us)
-        linkPreview.addEventListener('contextmenu', (e) => {
-            if (isLongPress) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    }
+    // Attach listeners to the WHOLE card
+    div.addEventListener('touchstart', startPress, { passive: true });
+    div.addEventListener('touchmove', handleMove, { passive: true });
+    div.addEventListener('touchend', endPress);
+    div.addEventListener('mousedown', startPress);
+    div.addEventListener('mouseleave', cancelPress);
+    div.addEventListener('mouseup', endPress);
+
+    // Prevent Context Menu on Long Press
+    div.addEventListener('contextmenu', (e) => {
+        if (isLongPress) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
     return div;
 }

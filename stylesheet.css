@@ -142,22 +142,28 @@
      transform: scale(0.98);
  }
 
- .snippet-content {
+.snippet-content {
     padding: 1rem;
     font-size: 0.95rem;
     line-height: 1.5;
-    
-    /* 1. Preserve Enters and Spaces */
-    white-space: pre-wrap; 
-    
-    /* 2. Cut off long text gracefully */
+    white-space: pre-wrap;
     display: -webkit-box;
-    -webkit-line-clamp: 10; /* Show max 10 lines */
+    -webkit-line-clamp: 10;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    
-    /* Optional: Ensure long words break */
-    word-wrap: break-word; 
+    word-wrap: break-word;
+
+    /* --- NEW: Disable Text Selection --- */
+    user-select: none;
+    -webkit-user-select: none;   /* Safari/Chrome */
+    -webkit-touch-callout: none; /* iOS Menu */
+    cursor: pointer; /* Shows it's clickable on desktop */
+}
+
+/* Optional: Visual Feedback when pressing text */
+.snippet-card:active .snippet-content {
+    opacity: 0.7;
+    transition: opacity 0.1s;
 }
 
  /* --- Link Preview Styling --- */
