@@ -13,6 +13,20 @@
         href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNuaXBwZXQgS2VlcGVyIiwKICAic2hvcnRfbmFtZSI6ICJTbmlwcyIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiI2ZmZmZmZiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vdmlhLnBsYWNlaG9sZGVyLmNvbS8xOTIiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
     <link rel="stylesheet" href="stylesheet.css">
     <script src="./script.js" defer></script>
+
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.error('SW Fail:', err));
+        }
+    </script>
+
 </head>
 
 <body>
