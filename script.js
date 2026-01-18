@@ -351,7 +351,14 @@ function filterLogic(snippet) {
 function createCard(snippet) {
     const div = document.createElement('div');
     div.className = 'snippet-card';
-    div.onclick = () => openModal(snippet);
+    
+    // 1. Basic click on the card body (Text areas) -> Edit
+    div.onclick = (e) => {
+        // Only trigger if we didn't click inside the link preview
+        if (!e.target.closest('.link-preview')) {
+            openModal(snippet);
+        }
+    };
 
     const urlMatch = snippet.text.match(RE.URL);
     const url = urlMatch ? urlMatch[0] : null;
@@ -361,49 +368,130 @@ function createCard(snippet) {
     if (url) content = content.replace(url, '');
     content = content.replace(RE.TAG, ' ').replace(/\s+/g, ' ').trim();
 
-    // 1. DETECT: Is this snippet JUST a link?
-    // If 'content' is empty but we have a URL, it's a link-only card.
     const isLinkOnly = !content && !!url;
-    if (isLinkOnly) {
-        div.classList.add('is-link-only');
-    }
+    if (isLinkOnly) div.classList.add('is-link-only');
 
     let html = '';
     
-    // 2. CONTENT: Only show text block if there is actual text
+    // Content Section
     if (content) {
         html += `<div class="snippet-content">${escapeHtml(content)}</div>`;
     } else if (snippet.tags?.length && !url) {
-        // Only show grey tags here if there is NO url and NO text
         html += `<div class="snippet-content" style="color:#888">${snippet.tags.map(t=>'#'+t).join(' ')}</div>`;
     }
 
-    // 3. LINK PREVIEW
+    // Link Preview Section (Note: No inline onclick anymore)
     if (url) {
+        let domain = 'External Link';
+        let title = 'Link';
+        let image = null;
+
         if (snippet.meta) {
-            const { title, image, domain } = snippet.meta;
-            const displayImage = image || `https://via.placeholder.com/400x200?text=${domain || 'Link'}`;
-            
-            html += `
-                <div class="link-preview" onclick="event.stopPropagation(); window.open('${url}', '_blank');">
-                    <img src="${displayImage}" class="link-image" loading="lazy">
-                    <div class="link-meta">
-                        <div class="link-title">${escapeHtml(title || domain)}</div>
-                        <div class="link-domain">${escapeHtml(domain || 'External Link')}</div>
-                    </div>
-                </div>`;
+            domain = snippet.meta.domain || new URL(url).hostname;
+            title = snippet.meta.title || domain;
+            image = snippet.meta.image;
         } else {
-            // Skeleton (Keep existing logic)
-            html += `
-                <div class="skeleton-block skeleton-image"></div>
-                <div class="skeleton-block skeleton-meta">
-                    <div class="skeleton-block skeleton-line"></div>
-                    <div class="skeleton-block skeleton-line short"></div>
-                </div>`;
+             try { domain = new URL(url).hostname; } catch(e){}
         }
+
+        // Generate the fallback gradient
+        const bgStyle = getGradientForDomain(domain);
+        
+        // Logic:
+        // 1. If we have an image URL, try to show it.
+        // 2. If that fails (onerror), hide IMG and show the fallback DIV.
+        // 3. If we never had an image, just show the fallback DIV immediately.
+        
+        const imgTag = image 
+            ? `<img src="${image}" class="link-image" loading="lazy" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+            : '';
+
+        const fallbackDisplay = image ? 'none' : 'flex';
+
+        html += `
+            <div class="link-preview">
+                ${imgTag}
+                <div class="fallback-preview" style="display:${fallbackDisplay}; background:${bgStyle}">
+                    <span>${domain.charAt(0)}</span>
+                    <span class="fallback-domain">${domain}</span>
+                </div>
+                
+                <div class="link-meta">
+                    <div class="link-title">${escapeHtml(title)}</div>
+                    <div class="link-domain">${escapeHtml(domain)}</div>
+                </div>
+            </div>`;
     }
 
     div.innerHTML = html;
+
+    // --- LONG PRESS LOGIC FOR LINKS ---
+    const linkPreview = div.querySelector('.link-preview');
+    if (linkPreview) {
+        let timer;
+        let isLongPress = false;
+        let startX, startY;
+
+        const startPress = (e) => {
+            isLongPress = false;
+            // Track touch position to detect scrolling
+            if (e.touches) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }
+            
+            timer = setTimeout(() => {
+                isLongPress = true;
+                if (navigator.vibrate) navigator.vibrate(50); // Bzzzt!
+                openModal(snippet); // Trigger Edit
+            }, 500); // 500ms wait time
+        };
+
+        const cancelPress = () => clearTimeout(timer);
+
+        const handleMove = (e) => {
+            if (!startX) return;
+            const x = e.touches[0].clientX;
+            const y = e.touches[0].clientY;
+            // If moved more than 10px, it's a scroll, not a long press
+            if (Math.abs(x - startX) > 10 || Math.abs(y - startY) > 10) {
+                clearTimeout(timer);
+            }
+        };
+
+        const endPress = (e) => {
+            clearTimeout(timer);
+            // If it wasn't a long press, treat it as a normal click (Open Link)
+            if (!isLongPress) {
+                e.stopPropagation(); // Stop card click
+                window.open(url, '_blank');
+            } else {
+                // If it WAS a long press, we prevent standard behavior
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
+        // Touch Events (Mobile)
+        linkPreview.addEventListener('touchstart', startPress, { passive: true });
+        linkPreview.addEventListener('touchmove', handleMove, { passive: true });
+        linkPreview.addEventListener('touchend', endPress);
+        
+        // Mouse Events (Desktop)
+        linkPreview.addEventListener('mousedown', startPress);
+        linkPreview.addEventListener('mouseleave', cancelPress);
+        linkPreview.addEventListener('mouseup', endPress);
+
+        // Prevent Context Menu on Long Press (so native menu doesn't block us)
+        linkPreview.addEventListener('contextmenu', (e) => {
+            if (isLongPress) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
     return div;
 }
 
@@ -533,6 +621,22 @@ async function fetchMetadataAndUpdate(snippet, url) {
 
     // UI verversen
     loadSnippets();
+}
+
+function getGradientForDomain(domain) {
+    if (!domain) return 'linear-gradient(135deg, #eee, #ddd)';
+    
+    let hash = 0;
+    for (let i = 0; i < domain.length; i++) {
+        hash = domain.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Create HSL color from hash
+    const h = Math.abs(hash % 360);
+    const s = 65; // Saturation 65%
+    const l = 55; // Lightness 55%
+    
+    return `linear-gradient(135deg, hsl(${h}, ${s}%, ${l}%), hsl(${h+40}, ${s}%, ${l-20}%))`;
 }
 
 // --- Modal Handling ---
