@@ -143,12 +143,22 @@
  }
 
  .snippet-content {
-     padding: 1rem;
-     font-size: 0.95rem;
-     line-height: 1.5;
-     white-space: pre-wrap;
-     word-wrap: break-word;
- }
+    padding: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    
+    /* 1. Preserve Enters and Spaces */
+    white-space: pre-wrap; 
+    
+    /* 2. Cut off long text gracefully */
+    display: -webkit-box;
+    -webkit-line-clamp: 10; /* Show max 10 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    
+    /* Optional: Ensure long words break */
+    word-wrap: break-word; 
+}
 
  /* --- Link Preview Styling --- */
  .link-preview {
